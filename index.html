@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme = param === "dark" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <title>MIMIR-OPOLY | A cooperative escape</title>
+  <link rel="stylesheet" href="styles.css?v=20260924-preview1">
+  <script src="game.js?v=20260924-preview1" defer></script>
+  <script src="preview.js?v=20260924-preview1" defer></script>
+  <script src="app.js?v=20260924-preview1" defer></script>
+</head>
+<body>
+  <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="icon-property" viewBox="0 0 64 64"><path d="M6 29 32 8 58 29M14 24v32h36V24M26 56V37h12v19M20 30h5m14 0h5"/></symbol>
+      <symbol id="icon-chance" viewBox="0 0 64 64"><path d="M20 20c0-18 29-19 29-1 0 12-17 11-17 25"/><circle cx="32" cy="54" r="2"/></symbol>
+      <symbol id="icon-community" viewBox="0 0 64 64"><path d="M8 30V20c0-10 48-10 48 0v10M8 29h48v26H8zM8 36h21m6 0h21M19 13v17m26-17v17"/><rect x="28" y="31" width="8" height="13" rx="1"/></symbol>
+      <symbol id="icon-station" viewBox="0 0 64 64"><path class="train-fill" d="M38 15h22v30H7V31h8V21h9v10h14ZM4 45h57v5H1Z"/><path class="train-window" d="M43 20h11v10H43Z"/><circle class="train-fill" cx="16" cy="52" r="6"/><circle class="train-fill" cx="45" cy="52" r="7"/><path d="M16 52h29"/></symbol>
+      <symbol id="icon-utility" viewBox="0 0 64 64"><path d="M23 43c0-8-10-10-10-23a19 19 0 0 1 38 0c0 13-10 15-10 23M23 43h18v9H23zM27 58h10M27 23l5 7 5-7m-5 7v13"/></symbol>
+      <symbol id="icon-compass" viewBox="0 0 64 64"><circle cx="32" cy="32" r="25"/><path d="m43 17-6 20-17 11 7-21zM32 2v8m0 44v8M2 32h8m44 0h8"/></symbol>
+      <symbol id="icon-team" viewBox="0 0 64 64"><circle cx="22" cy="19" r="8"/><circle cx="44" cy="23" r="7"/><path d="M7 51V39c0-12 29-12 29 0v12zM39 35c9-5 18 1 18 8v8H43"/></symbol>
+      <symbol id="icon-finish" viewBox="0 0 64 64"><path d="M14 58V7m1 3c10-10 22 11 36 0v24c-14 11-26-10-36 0M24 8v24m14-19v23M15 22c10-10 22 11 36 0"/></symbol>
+      <symbol id="icon-arrow" viewBox="0 0 64 64"><path d="M57 32H9m17-17L9 32l17 17"/></symbol>
+      <symbol id="icon-go-arrow" viewBox="0 0 64 64"><path d="M5 32 24 14v11h35v14H24v11Z"/></symbol>
+      <symbol id="icon-jail" viewBox="0 0 64 64"><rect x="10" y="8" width="44" height="48" rx="1"/><path d="M19 8v48M28 8v48M37 8v48M46 8v48M10 20h44M10 45h44"/></symbol>
+      <symbol id="icon-skyline" viewBox="0 0 180 90"><path d="M3 84h174M13 84V42h30v42M20 42V31h16v11m13 42V24l22-13 22 13v60M61 34h20M61 44h20M61 54h20m21 30V45h33v39m-24-29h6m8 0h6m-20 12h6m8 0h6m15 17V30h19v54M148 20v10m-21 15V34m-50 50V70H66v14M23 55h9m-9 12h9"/></symbol>
+    </defs>
+  </svg>
+  <a class="skip-link" href="#objective">Skip to current objective</a>
+  <div id="storage-error" class="system-error" role="alert" hidden></div>
+  <div id="preview-banner" class="preview-banner" hidden>
+    <strong>PREVIEW — NOT A LIVE GAME</strong>
+    <span>Separate practice tab. Your saved live setup and run are untouched.</span>
+    <button id="restart-preview" class="secondary" type="button">Restart preview</button>
+  </div>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">M</span><div><span class="eyebrow">ONE TEAM. ONE GAME.</span><h1 id="game-title">MIMIR-OPOLY</h1></div></div>
+    <div class="header-actions"><span id="mode-badge" class="badge">SETUP / DEMO</span><button id="host-open" class="quiet">Host / setup</button></div>
+  </header>
+  <main id="player-view">
+    <div class="expedition-bar"><span id="journey-status">An ordinary game. An extraordinary way home.</span><div class="clock-wrap"><span id="clock-label">TIME TO RETURN</span><span id="clock" class="clock" role="timer" aria-label="60 minutes remaining">60:00</span></div></div>
+    <div class="play-table">
+    <section class="board-panel" aria-label="Team game board">
+      <div class="board-heading"><span class="eyebrow">THE COOPERATIVE EDITION</span><span id="progress-label">One path. One team.</span></div>
+      <div id="game-board" class="classic-board">
+        <div id="board-art" aria-hidden="true"></div>
+        <ol id="board" class="perimeter-board"></ol>
+        <div class="city-center">
+          <section id="chance-deck" class="table-deck chance-deck" aria-label="Chance deck">
+            <div class="pile-face"><span>CHANCE</span><svg class="board-icon" aria-hidden="true"><use href="#icon-chance"/></svg><small id="chance-status">Fixed card order</small></div>
+          </section>
+          <div class="city-instructions"><strong>ONE TEAM.<br>ONE TOKEN.</strong><span>Solve a card.<br>Earn your next step.</span></div>
+          <div class="city-wordmark"><span>YOUR WAY HOME</span><h2 id="board-title">MIMIR-OPOLY</h2><small>AN ORIGINAL PUZZLE-BOARD ADVENTURE</small></div>
+          <div class="city-skyline" aria-hidden="true"><svg class="board-icon" viewBox="0 0 180 90"><use href="#icon-skyline"/></svg><span>EVERY STEP EARNED</span></div>
+          <section id="community-deck" class="table-deck community-deck" aria-label="Community Chest deck">
+            <div class="pile-face"><span>COMMUNITY CHEST</span><svg class="board-icon" aria-hidden="true"><use href="#icon-community"/></svg><small id="community-status">Fixed card order</small></div>
+          </section>
+        </div>
+        <div id="pawn-layer" aria-hidden="true">
+          <div id="team-pawn">
+            <svg viewBox="0 0 64 84">
+              <ellipse cx="32" cy="77" rx="27" ry="5" fill="var(--cp-border-strong)" opacity=".35"/>
+              <path d="M22 29C17 27 15 22 15 17A17 17 0 0 1 49 17C49 23 46 27 42 29C41 39 46 51 50 57L56 64L55 71Q32 80 9 71L8 64L14 57C20 48 23 37 22 29Z" fill="var(--cp-property-red)" stroke="var(--cp-piece-edge)" stroke-width="2"/>
+              <path d="M12 63Q32 71 52 63M22 32Q32 37 42 32" fill="none" stroke="var(--cp-piece-edge)" stroke-width="3"/>
+              <ellipse cx="26" cy="12" rx="6" ry="4" fill="var(--cp-sheen)" transform="rotate(-35 26 12)"/>
+              <path d="M26 41L22 55" stroke="var(--cp-sheen)" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="board-legend"><span><i class="legend-current"></i> Your token</span><span><i class="legend-complete"></i> Solved spaces</span><span>Just Visiting &amp; other corners: pass through. No jail turns or penalties.</span></div>
+    </section>
+        <aside class="card-table" aria-label="Drawn challenge card">
+          <div class="deck-heading"><span id="active-deck-label">THE CURRENT CARD</span><span id="deck-count"></span></div>
+          <div id="card-stack" class="card-stack">
+            <div id="card-turner" class="card-turner">
+              <div class="card-reverse" aria-hidden="true"><span id="card-back-title" class="deck-wordmark">MIMIR-OPOLY</span><svg id="card-back-icon" class="board-icon"><use href="#icon-property"/></svg><span id="card-back-type">YOUR NEXT CARD</span></div>
+              <section id="objective" class="objective center-card" tabindex="-1" aria-label="Current challenge card"></section>
+            </div>
+          </div>
+          <div id="answer-controls" class="answer-controls"></div>
+          <p id="deal-status" class="deal-status" role="status">Your adventure is waiting in the cards.</p>
+          <div id="deck-rule" class="deck-rule"><strong>ONE ORDERED DECK</strong><p id="deck-rule-text">Only your current card is playable. Correct answers unlock one move.</p></div>
+        </aside>
+    </div>
+    <div id="player-message" class="feedback" role="status" aria-live="polite"></div>
+    <div id="celebration" class="celebration" aria-hidden="true"></div>
+    <footer>Fictional stakes. Real teamwork. Doors stay unlocked; anyone may step out at any time.<span>No accounts. No internet. Just your expedition.</span></footer>
+  </main>
+  <main id="host-view" hidden tabindex="-1"></main>
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title"><h2 id="confirm-title">Confirm host action</h2><p id="confirm-description"></p><div class="button-row"><button id="confirm-cancel" class="secondary">Cancel</button><button id="confirm-accept">Confirm</button></div></dialog>
+  <noscript>This game needs JavaScript enabled in your browser. No internet connection is required.</noscript>
+</body>
+</html>
