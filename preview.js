@@ -4,22 +4,28 @@
   else root.GamePreview = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function (G) {
   "use strict";
-  const REVISION = "20260924-board3";
+  const REVISION = "20260924-finale1";
   function stable(value) {
     if (Array.isArray(value)) return value.map(stable);
     if (value && typeof value === "object") return Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])]));
     return value;
   }
+  function identityConfig(value) {
+    const result = G.clone(value);
+    delete result.hostNotes;
+    for (const card of result.cards) {
+      if (G.supportsFinaleAlias(result, card)) card.answers = card.answers.filter(answer => G.normalize(answer) !== "FREE SNACKS!");
+    }
+    return result;
+  }
   function matchesSetup(config, expected) {
-    const actual = G.upgradedEventConfig(config);
-    const target = G.clone(expected);
-    delete actual.hostNotes; delete target.hostNotes;
+    const actual = identityConfig(G.upgradedEventConfig(config));
+    const target = identityConfig(expected);
     return JSON.stringify(stable(actual)) === JSON.stringify(stable(target));
   }
   function fingerprint(value) {
     let hash = 2166136261;
-    const publicSetup = G.clone(value);
-    delete publicSetup.hostNotes;
+    const publicSetup = identityConfig(value);
     for (const char of JSON.stringify(publicSetup)) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
     return (hash >>> 0).toString(16);
   }

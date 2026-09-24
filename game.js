@@ -62,7 +62,7 @@
         title: "WHERE ARE WE SUPPOSED TO BE?", prompt: "You made it to work—but where are you supposed to be next?",
         answers: ["MORALE EVENT AT THE COMMONS"], hint: "", demo: false },
       { id: "bank-audit", boardLabel: "Chance", spaceType: "chance", group: "auto", title: "BANK AUDIT!",
-        prompt: "The BANK wants a closer look at your money.", answers: ["FREE SNACKS"], hint: "", demo: false, finishOnSolve: true }
+        prompt: "The BANK wants a closer look at your money.", answers: ["FREE SNACKS", "FREE SNACKS!"], hint: "", demo: false, finishOnSolve: true }
     ]
   };
   function eventUpdateFields(config) {
@@ -116,6 +116,15 @@
   }
   function completeCard(card) {
     return card.prompt.trim() && card.answers.length && (!card.reveal || (card.reveal.answers.length && card.reveal.name.trim() && card.reveal.price.trim()));
+  }
+  function supportsFinaleAlias(config, card) {
+    return config.presetId === eventConfig.presetId && card.id === "bank-audit" && card.finishOnSolve === true &&
+      config.cards[config.cards.length - 1].id === card.id && card.answers.some(value => normalize(value) === "FREE SNACKS");
+  }
+  function acceptsAnswer(config, card, answer) {
+    const normalized = normalize(answer);
+    return card.answers.some(value => normalize(value) === normalized) ||
+      supportsFinaleAlias(config, card) && normalized === "FREE SNACKS!";
   }
   function validateConfig(input) {
     check(input && input.version === VERSION, "Unsupported setup version. Expected version 1.");
@@ -231,7 +240,7 @@
       run.identified.push(cardId);
       if (!override) return { ok: true, outcome: "identified", message: "Property identified." };
     }
-    if (!override && !card.answers.some(value => normalize(value) === normalize(answer))) {
+    if (!override && !acceptsAnswer(run.config, card, answer)) {
       return { ok: false, message: "Not quite. Try again." };
     }
     run.phase = "solved";
@@ -365,5 +374,5 @@
     return [layout[from], ...corners.filter(p => distance(p) > start && distance(p) < end), layout[to]]
       .map(p => ({ x: p.x, y: p.y, offset: (distance(p) - start) / (end - start) }));
   }
-  return { VERSION, RUN_VERSION, EVENT_REVISION, OLD_EVENT_INTRO, eventUpdateFields, eventUpdateTargets, upgradedEventConfig, applyEventUpdate, SPACE_TYPES, GROUPS, groupChoices, cardStyle, cardView, identified, movementMode, clone, normalize, defaultConfig, eventConfig, validateConfig, readiness, currentCard, remaining, tick, start, draw, submit, move, continuePlay, answerAndMove, pause, resume, adjust, showHint, validateRun, boardGeometry, boardLayout, travelPath };
+  return { VERSION, RUN_VERSION, EVENT_REVISION, OLD_EVENT_INTRO, eventUpdateFields, eventUpdateTargets, upgradedEventConfig, applyEventUpdate, supportsFinaleAlias, acceptsAnswer, SPACE_TYPES, GROUPS, groupChoices, cardStyle, cardView, identified, movementMode, clone, normalize, defaultConfig, eventConfig, validateConfig, readiness, currentCard, remaining, tick, start, draw, submit, move, continuePlay, answerAndMove, pause, resume, adjust, showHint, validateRun, boardGeometry, boardLayout, travelPath };
 });
