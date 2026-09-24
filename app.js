@@ -71,6 +71,12 @@
     svg.append(use);
     return svg;
   }
+  const referenceIcons = { community: "chest.png", chance: "chance.png", station: "railroad.png" };
+  function graphic(name, useReference) {
+    return useReference && referenceIcons[name]
+      ? node("img", { className: "board-icon reference-icon", src: `board-assets/${referenceIcons[name]}?v=${P.REVISION}`, alt: "", "aria-hidden": "true", draggable: "false" })
+      : icon(name);
+  }
   function positionPanel(element, point) {
     element.style.left = `${point.left}%`; element.style.top = `${point.top}%`;
     element.style.width = `${point.width}%`; element.style.height = `${point.height}%`;
@@ -149,8 +155,10 @@
       if (P.matchesSetup(candidate.config, previewConfig) &&
           (!candidate.run || candidate.run.mode === "demo" && P.matchesSetup(candidate.run.config, previewConfig))) matches.push(candidate);
     }
-    if (matches.length > 1) throw new Error("More than one matching previous preview exists. Existing data was preserved; use the original preview tab or export its state before choosing a restart.");
-    return matches[0] || null;
+    const updated = matches.filter(candidate => !G.eventUpdateTargets(candidate).length);
+    const candidates = updated.length ? updated : matches;
+    if (candidates.length > 1) throw new Error("More than one matching previous preview exists. Existing data was preserved; use the original preview tab or export its state before choosing a restart.");
+    return candidates[0] || null;
   }
   function validatePreview(value) {
     if (!previewMode) return;
@@ -202,10 +210,13 @@
     const position = run ? run.index + 1 : 0;
     const geometry = G.boardGeometry(config.cards.length);
     const layout = geometry.spaces;
+    const reference = config.presetId === G.eventConfig.presetId;
     const board = $("board");
     board.replaceChildren();
     board.parentElement.classList.toggle("dense", config.cards.length > 12);
     board.parentElement.classList.toggle("mint-board", config.presentation?.boardTone === "mint");
+    board.parentElement.classList.toggle("reference-board", reference);
+    document.querySelector(".card-table").classList.toggle("reference-cards", reference);
     const art = $("board-art");
     art.replaceChildren();
     geometry.connectors.forEach(point => {
@@ -213,7 +224,9 @@
       positionPanel(lane, point); art.append(lane);
     });
     geometry.corners.forEach((point, index) => {
-      const artwork = index === 0
+      const artwork = reference
+        ? node("img", { className: "reference-corner", src: `board-assets/${["just-visiting.png", "free-parking.png", "go-to-jail.png"][index]}?v=${P.REVISION}`, alt: "", "aria-hidden": "true", draggable: "false" })
+        : index === 0
         ? node("div", { className: "just-visiting" },
           node("div", { className: "visiting-cell" }, node("strong", { text: "IN JAIL" }), icon("jail")),
           node("strong", { className: "visiting-just", text: "JUST" }),
@@ -233,10 +246,11 @@
       const face = node("div", { className: "space-face", "aria-hidden": "true" },
         terminal ? null : node("span", { className: "property-band" }),
         node("strong", { className: terminal ? "track-label" : "tile-title", text: terminal ? index === 0 ? "GO" : "FINISH" : view.boardLabel }),
-        view?.branding === "microsoft" ? microsoftBrand(true) : icon(terminal ? index === 0 ? "go-arrow" : "finish" : style.type),
+        view?.branding === "microsoft" ? microsoftBrand(true) : graphic(terminal ? index === 0 ? "go-arrow" : "finish" : style.type, reference),
         terminal ? node("span", { className: "space-number", text: index === 0 ? "START HERE" : "YOU MADE IT" }) :
           node("span", { className: "space-number" }, node("span", { className: "space-index", text: String(index).padStart(2, "0") }),
             node("span", { className: "space-status", text: ` / ${completed ? "SOLVED" : "CHALLENGE"}` })));
+      if (reference && index === 0) face.replaceChildren(node("img", { className: "reference-corner", src: `board-assets/go.png?v=${P.REVISION}`, alt: "", "aria-hidden": "true", draggable: "false" }));
       const item = node("li", { className: `track-space side-${point.side} type-${style.type} group-${style.group} ${terminal ? "terminal-space" : ""} ${current ? "current" : ""} ${completed ? "complete" : ""}`,
         "data-side": point.side, "aria-label": `${label}${current ? ", your team is here" : completed ? ", completed" : ", pending"}` },
         face, completed ? node("span", { className: "space-check", "aria-hidden": "true", text: "\u2713" }) : null);
@@ -244,7 +258,7 @@
       if (current) item.setAttribute("aria-current", "step");
       board.append(item);
     });
-    $("board-title").textContent = config.title;
+    $("board-title").textContent = reference && config.title === "MIMIR-OPOLY" ? "MIMIROPOLY" : config.title;
     $("board-title").classList.toggle("long-title", config.title.length > 32);
     $("board-title").classList.toggle("very-long-title", config.title.length > 60);
     renderDecks(config);
@@ -278,6 +292,11 @@
     const run = state.run;
     const active = run && run.status !== "won" ? G.cardStyle(G.currentCard(run), run.index).type : null;
     for (const type of ["chance", "community"]) {
+      const face = $(`${type}-deck`).querySelector(".pile-face");
+      const art = config.presetId === G.eventConfig.presetId
+        ? node("img", { className: "board-icon reference-icon", src: `board-assets/${type === "chance" ? "chance-deck.png" : "chest.png"}?v=${P.REVISION}`, alt: "", "aria-hidden": "true", draggable: "false" })
+        : icon(type);
+      face.querySelector(".board-icon").replaceWith(art);
       const configured = config.cards.filter((card, i) => G.cardStyle(card, i).type === type).length;
       const left = config.cards.filter((card, i) => (!run || i >= run.index) && G.cardStyle(card, i).type === type).length;
       const isCurrent = active === type;
@@ -360,7 +379,7 @@
     $("active-deck-label").textContent = run && run.status !== "won" ? `${G.SPACE_TYPES[style.type]} / DRAWN CARD` : "YOUR GAME CARD";
     $("card-back-title").textContent = config.title;
     $("card-back-type").textContent = G.SPACE_TYPES[style.type];
-    $("card-back-icon").querySelector("use").setAttribute("href", `#icon-${style.type}`);
+    $("card-back-icon").replaceChildren(graphic(style.type, config.presetId === G.eventConfig.presetId));
     if (!run) {
       if (!minimal) panel.append(node("span", { className: "eyebrow", text: "THE ADVENTURE IS YOURS" }));
       panel.append(node("h2", { text: presentation?.openingTitle || config.title }),
@@ -432,7 +451,7 @@
         node("span", { className: "eyebrow", text: `SPACE ${run.index + 1} / ${config.cards.length}` }));
     }
     if (view.branding === "microsoft") panel.append(node("div", { className: "building-brand" }, microsoftBrand()));
-    if (view.price !== null) panel.append(icon(style.type));
+    if (view.price !== null || minimal && ["chance", "community"].includes(style.type)) panel.append(graphic(style.type, config.presetId === G.eventConfig.presetId));
     if (view.title || !minimal) panel.append(node("h2", { text: view.title || `Card ${run.index + 1}` }));
     if (view.prompt) panel.append(...richParagraphs(view.prompt, view.emphasis, "card-prompt"));
     if (view.price !== null) panel.append(p(`Price: ${view.price}`, "property-price"));

@@ -4,7 +4,7 @@
   else root.GamePreview = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function (G) {
   "use strict";
-  const REVISION = "20260924-event2";
+  const REVISION = "20260924-board3";
   function stable(value) {
     if (Array.isArray(value)) return value.map(stable);
     if (value && typeof value === "object") return Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])]));
@@ -18,7 +18,9 @@
   }
   function fingerprint(value) {
     let hash = 2166136261;
-    for (const char of JSON.stringify(value)) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
+    const publicSetup = G.clone(value);
+    delete publicSetup.hostNotes;
+    for (const char of JSON.stringify(publicSetup)) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
     return (hash >>> 0).toString(16);
   }
   function resolve(href) {

@@ -11,10 +11,10 @@
     })();
   </script>
   <title>MIMIR-OPOLY | A cooperative escape</title>
-  <link rel="stylesheet" href="styles.css?v=20260924-event2">
-  <script src="game.js?v=20260924-event2" defer></script>
-  <script src="preview.js?v=20260924-event2" defer></script>
-  <script src="app.js?v=20260924-event2" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20260924-board3">
+  <script src="game.js?v=20260924-board3" defer></script>
+  <script src="preview.js?v=20260924-board3" defer></script>
+  <script src="app.js?v=20260924-board3" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -102,13 +102,13 @@
           </div>
         </div>
       </div>
-      <div class="board-legend"><span><i class="legend-current"></i> Your token</span><span><i class="legend-complete"></i> Solved spaces</span><span>Just Visiting &amp; other corners: pass through. No jail turns or penalties.</span></div>
+      <div class="board-legend"><span><i class="legend-current"></i> Your token</span><span><i class="legend-complete"></i> Solved spaces</span><span>Printed corner rules are decorative. No jail turns or penalties; only the numbered challenges count.</span></div>
     </section>
         <aside class="card-table" aria-label="Drawn challenge card">
           <div class="deck-heading"><span id="active-deck-label">THE CURRENT CARD</span><span id="deck-count"></span></div>
           <div id="card-stack" class="card-stack">
             <div id="card-turner" class="card-turner">
-              <div class="card-reverse" aria-hidden="true"><span id="card-back-title" class="deck-wordmark">MIMIR-OPOLY</span><svg id="card-back-icon" class="board-icon"><use href="#icon-property"/></svg><span id="card-back-type">YOUR NEXT CARD</span></div>
+              <div class="card-reverse" aria-hidden="true"><span id="card-back-title" class="deck-wordmark">MIMIR-OPOLY</span><span id="card-back-icon"></span><span id="card-back-type">YOUR NEXT CARD</span></div>
               <section id="objective" class="objective center-card" tabindex="-1" aria-label="Current challenge card"></section>
             </div>
           </div>

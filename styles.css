@@ -51,14 +51,19 @@ html[data-theme="dark"] {
   --cp-highlight: rgba(253, 142, 161, 0.12);
 }
 :root {
-  --cp-property-brown: #955436;
-  --cp-property-light-blue: #aae0fa;
-  --cp-property-pink: #d93a96;
-  --cp-property-orange: #f7941d;
-  --cp-property-red: #ed1b24;
-  --cp-property-yellow: #fff200;
-  --cp-property-green: #1fb25a;
-  --cp-property-dark-blue: #0072bb;
+  --cp-property-brown: #955234;
+  --cp-property-light-blue: #aadff9;
+  --cp-property-pink: #d83a95;
+  --cp-property-orange: #f6931c;
+  --cp-property-red: #f01c25;
+  --cp-property-yellow: #fdf200;
+  --cp-property-green: #1fb159;
+  --cp-property-dark-blue: #0072ba;
+  --cp-board-mint: #d8e8d6;
+  --cp-deck-blue: #bae4f9;
+  --cp-deck-blue-end: #7fc3e9;
+  --cp-deck-orange: #f6941e;
+  --cp-deck-orange-end: #f7a94b;
   --cp-board-ink: #151515;
   --cp-board-paper: #ffffff;
   --cp-metal-silver: #bdc4cb;
@@ -107,7 +112,7 @@ main { padding: 0 32px; }
 .board-heading .eyebrow { margin: 0; font-size: 10px; }
 .classic-board { position: relative; width: 100%; aspect-ratio: 1; border: 3px solid var(--cp-text); outline: 1px solid var(--cp-text); outline-offset: 4px; background: var(--cp-surface); container-type: inline-size; }
 .classic-board::after { content: ""; position: absolute; inset: 16%; border: 2px solid var(--cp-text); pointer-events: none; }
-.mint-board { --cp-event-mint: color-mix(in srgb, var(--cp-property-green) 13%, var(--cp-board-paper)); background: var(--cp-event-mint); }
+.mint-board { --cp-event-mint: var(--cp-board-mint); --cp-text: var(--cp-board-ink); --cp-text-soft: var(--cp-metal-dark); background: var(--cp-event-mint); color: var(--cp-board-ink); }
 .mint-board .track-space, .mint-board .track-corner, .mint-board .track-connector { background: var(--cp-event-mint); }
 .perimeter-board, #board-art, #pawn-layer { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; pointer-events: none; }
 .perimeter-board { list-style: none; }
@@ -200,6 +205,26 @@ main { padding: 0 32px; }
 #pawn-layer { z-index: 5; }
 #team-pawn { position: absolute; width: var(--pawn-size, 42px); transform: translate(-50%, -65%); filter: drop-shadow(0 2px 1px var(--cp-border)); }
 #team-pawn svg { display: block; width: 100%; overflow: visible; }
+.reference-corner { display: block; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
+.reference-icon { object-fit: contain; pointer-events: none; }
+.reference-board .type-go .space-face { padding: 0; }
+.reference-board .city-center { display: block; padding: 0; }
+.reference-board .city-instructions, .reference-board .city-skyline,
+.reference-board .city-wordmark > span, .reference-board .city-wordmark > small { display: none; }
+.reference-board .city-wordmark { position: absolute; width: 116%; left: -8%; top: 50%; transform: translateY(-50%) rotate(-45deg); }
+.reference-board #board-title { margin: 0; padding: 8px 14px; border: 3px solid var(--cp-board-paper); outline: 3px solid var(--cp-property-red); border-radius: 7px; font-size: clamp(28px, 8.2cqw, 72px); font-weight: 400; letter-spacing: 1px; line-height: 1.12; }
+.reference-board #board-title.long-title { font-size: clamp(18px, 4.8cqw, 40px); }
+.reference-board #board-title.very-long-title { font-size: clamp(12px, 3cqw, 25px); }
+.reference-board .table-deck { position: absolute; width: 29%; height: auto; max-height: none; aspect-ratio: 1.45; transform: rotate(-45deg); }
+.reference-board .community-deck { left: 9%; top: 9%; --cp-deck-paper: var(--cp-deck-blue); background: linear-gradient(var(--cp-deck-blue), var(--cp-deck-blue-end)); }
+.reference-board .chance-deck { right: 9%; bottom: 9%; --cp-deck-paper: var(--cp-deck-orange); background: linear-gradient(var(--cp-deck-orange), var(--cp-deck-orange-end)); }
+.reference-board .pile-face { position: absolute; inset: 0; padding: 5%; }
+.reference-board .pile-face > span { font-size: clamp(6px, 1.35cqw, 11px); }
+.reference-board .pile-face .board-icon { width: 49%; height: 56%; }
+.reference-board .chance-deck .pile-face .board-icon { width: 24%; }
+.reference-board .pile-face small { font-size: clamp(5px, .85cqw, 7px); }
+.reference-cards .objective > img.board-icon { display: block; width: 62px; height: 62px; margin: 0 auto 20px; }
+.reference-cards .type-station .objective > img.board-icon { width: 100px; height: 76px; }
 .board-legend { padding: 14px 0 4px; display: flex; flex-wrap: wrap; gap: 5px 14px; font-size: 10px; color: var(--cp-text-muted); }
 .board-legend i { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border: 1px solid var(--cp-border-strong); border-radius: 50%; }
 .legend-current { background: var(--cp-property-red); }
