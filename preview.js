@@ -4,7 +4,18 @@
   else root.GamePreview = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function (G) {
   "use strict";
-  const REVISION = "20260924-hat1";
+  const REVISION = "20260924-event2";
+  function stable(value) {
+    if (Array.isArray(value)) return value.map(stable);
+    if (value && typeof value === "object") return Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])]));
+    return value;
+  }
+  function matchesSetup(config, expected) {
+    const actual = G.upgradedEventConfig(config);
+    const target = G.clone(expected);
+    delete actual.hostNotes; delete target.hostNotes;
+    return JSON.stringify(stable(actual)) === JSON.stringify(stable(target));
+  }
   function fingerprint(value) {
     let hash = 2166136261;
     for (const char of JSON.stringify(value)) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
@@ -24,11 +35,12 @@
         config = G.validateConfig(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)));
       } catch (error) { throw new Error(`Invalid preview setup: ${error.message}`); }
     }
+    config = G.upgradedEventConfig(config);
     G.start(config, "demo");
     return { config, key: `mimir-opoly-preview-v1:${fingerprint(config)}` };
   }
   function makeLink(config, href) {
-    const snapshot = G.validateConfig(config);
+    const snapshot = G.upgradedEventConfig(G.validateConfig(config));
     delete snapshot.hostNotes;
     G.start(snapshot, "demo");
     const url = new URL(href);
@@ -42,5 +54,5 @@
     url.hash = new URLSearchParams({ setup: encoded }).toString();
     return url.href;
   }
-  return { REVISION, resolve, makeLink };
+  return { REVISION, resolve, makeLink, matchesSetup };
 });

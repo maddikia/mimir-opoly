@@ -11,10 +11,10 @@
     })();
   </script>
   <title>MIMIR-OPOLY | A cooperative escape</title>
-  <link rel="stylesheet" href="styles.css?v=20260924-hat1">
-  <script src="game.js?v=20260924-hat1" defer></script>
-  <script src="preview.js?v=20260924-hat1" defer></script>
-  <script src="app.js?v=20260924-hat1" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20260924-event2">
+  <script src="game.js?v=20260924-event2" defer></script>
+  <script src="preview.js?v=20260924-event2" defer></script>
+  <script src="app.js?v=20260924-event2" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -35,6 +35,11 @@
   </svg>
   <a class="skip-link" href="#objective">Skip to current objective</a>
   <div id="storage-error" class="system-error" role="alert" hidden></div>
+  <div id="event-update-banner" class="preview-banner" hidden>
+    <strong>HOST UPDATE AVAILABLE</strong>
+    <span>Your saved game and time are preserved. The host can apply the approved event changes.</span>
+    <button id="event-update-host" class="secondary" type="button">Host update</button>
+  </div>
   <div id="preview-banner" class="preview-banner" hidden>
     <strong>PREVIEW — NOT A LIVE GAME</strong>
     <span>Separate practice tab. Your saved live setup and run are untouched.</span>

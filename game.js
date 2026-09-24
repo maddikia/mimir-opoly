@@ -6,6 +6,8 @@
   "use strict";
   const VERSION = 1;
   const RUN_VERSION = 2;
+  const EVENT_REVISION = "20260924-casino60-auto";
+  const OLD_EVENT_INTRO = "You thought this was an ordinary board game. Now you’re part of it.\n\nComplete the challenges and finish the game within 60 minutes, or GO DIRECTLY TO JAIL!\n\nKeep every clue, receipt, and bill you collect. You never know when the BANK might ask questions.\n\nPress START GAME when everyone is ready.";
   const clone = value => JSON.parse(JSON.stringify(value));
   const normalize = value => String(value).trim().replace(/\s+/g, " ").toUpperCase();
   const SPACE_TYPES = { property: "Property", chance: "Chance", community: "Community Chest", station: "Station", utility: "Utility" };
@@ -36,9 +38,9 @@
     }))
   };
   const eventConfig = {
-    version: VERSION, presetId: "mimir-opoly-2026-09-24", title: "MIMIR-OPOLY",
-    movementMode: "manual", durationMinutes: 60, reviewed: false,
-    intro: "You thought this was an ordinary board game. Now you’re part of it.\n\nComplete the challenges and finish the game within 60 minutes, or GO DIRECTLY TO JAIL!\n\nKeep every clue, receipt, and bill you collect. You never know when the BANK might ask questions.\n\nPress START GAME when everyone is ready.",
+    version: VERSION, presetId: "mimir-opoly-2026-09-24", eventRevision: EVENT_REVISION, title: "MIMIR-OPOLY",
+    movementMode: "auto", durationMinutes: 60, reviewed: false,
+    intro: "You thought this was an ordinary board game. Now you’re part of it.\n\nComplete the challenges and finish the game within 60 minutes, or GO DIRECTLY TO JAIL!\n\nPress START GAME when everyone is ready.",
     presentation: {
       openingTitle: "WELCOME TO MIMIR-OPOLY!", startLabel: "START GAME", minimalCards: true, boardTone: "mint",
       successTitle: "YOU ESCAPED MIMIR-OPOLY!",
@@ -49,7 +51,7 @@
     cards: [
       { id: "casino", boardLabel: "Community Chest", spaceType: "community", group: "auto", title: "CASINO WINNINGS",
         prompt: "You get pulled into a casino game! Complete the challenge and report how much you won. Your first clue is behind the TV.",
-        emphasis: ["behind the TV"], answers: ["10", "$10", "+10"], hint: "", demo: false },
+        emphasis: ["behind the TV"], answers: ["60", "$60", "+60"], hint: "", demo: false },
       { id: "railroad", boardLabel: "????? Railroad", spaceType: "station", group: "auto", title: "",
         prompt: "Identify the mystery railroad.", answers: ["MINE"], hint: "", demo: false,
         reveal: { kind: "identify-property", answers: ["READING", "READING RAILROAD"], name: "READING RAILROAD", boardLabel: "Reading Railroad", price: "$275" } },
@@ -63,6 +65,47 @@
         prompt: "The BANK wants a closer look at your money.", answers: ["FREE SNACKS"], hint: "", demo: false, finishOnSolve: true }
     ]
   };
+  function eventUpdateFields(config) {
+    if (config.presetId !== eventConfig.presetId || config.eventRevision !== undefined) return [];
+    const fields = [];
+    const casino = config.cards.find(card => card.id === "casino");
+    if (casino && casino.answers.length === 3 && new Set(casino.answers).size === 3 &&
+        casino.answers.every(value => ["10", "$10", "+10"].includes(value))) fields.push("casino");
+    if (config.movementMode === "manual") fields.push("movement");
+    if (config.intro === OLD_EVENT_INTRO) fields.push("intro");
+    return fields;
+  }
+  function upgradedEventConfig(config) {
+    const result = clone(config);
+    const fields = eventUpdateFields(config);
+    if (fields.includes("casino")) result.cards.find(card => card.id === "casino").answers = ["60", "$60", "+60"];
+    if (fields.includes("movement")) result.movementMode = "auto";
+    if (fields.includes("intro")) result.intro = eventConfig.intro;
+    if (fields.length) result.eventRevision = EVENT_REVISION;
+    return result;
+  }
+  function eventUpdateTargets(state) {
+    return [{ target: "saved setup", config: state.config }, ...(state.run ? [{ target: "run snapshot", config: state.run.config }] : [])]
+      .map(item => ({ target: item.target, fields: eventUpdateFields(item.config) })).filter(item => item.fields.length);
+  }
+  function applyEventUpdate(state, now = Date.now()) {
+    validateConfig(state.config);
+    if (state.run) validateRun(state.run);
+    const result = clone(state);
+    const targets = eventUpdateTargets(state);
+    result.config = upgradedEventConfig(result.config);
+    if (result.run) {
+      const fields = eventUpdateFields(result.run.config);
+      result.run.config = upgradedEventConfig(result.run.config);
+      if (fields.includes("movement") && result.run.version === RUN_VERSION) {
+        result.run.movementMode = "auto";
+        // One already-earned move is explicit in the host's confirmation.
+        if (result.run.phase === "solved") continuePlay(result.run, now);
+      }
+      validateRun(result.run);
+    }
+    return { state: result, targets };
+  }
   function check(condition, message) { if (!condition) throw new Error(message); }
   function string(value, label, max, allowEmpty = false) {
     check(typeof value === "string" && value.length <= max && (allowEmpty || value.trim().length > 0), `${label} must be ${allowEmpty ? "" : "nonempty "}text, at most ${max} characters.`);
@@ -82,6 +125,7 @@
     check(typeof input.reviewed === "boolean", "The setup review flag is missing.");
     if (input.movementMode !== undefined) check(["manual", "auto"].includes(input.movementMode), "Movement must be manual or auto.");
     if (input.presetId !== undefined) string(input.presetId, "Preset ID", 100);
+    if (input.eventRevision !== undefined) string(input.eventRevision, "Event revision", 100);
     if (input.hostNotes !== undefined) string(input.hostNotes, "Host notes", 12000, true);
     if (input.presentation !== undefined) {
       const style = input.presentation;
@@ -321,5 +365,5 @@
     return [layout[from], ...corners.filter(p => distance(p) > start && distance(p) < end), layout[to]]
       .map(p => ({ x: p.x, y: p.y, offset: (distance(p) - start) / (end - start) }));
   }
-  return { VERSION, RUN_VERSION, SPACE_TYPES, GROUPS, groupChoices, cardStyle, cardView, identified, movementMode, clone, normalize, defaultConfig, eventConfig, validateConfig, readiness, currentCard, remaining, tick, start, draw, submit, move, continuePlay, answerAndMove, pause, resume, adjust, showHint, validateRun, boardGeometry, boardLayout, travelPath };
+  return { VERSION, RUN_VERSION, EVENT_REVISION, OLD_EVENT_INTRO, eventUpdateFields, eventUpdateTargets, upgradedEventConfig, applyEventUpdate, SPACE_TYPES, GROUPS, groupChoices, cardStyle, cardView, identified, movementMode, clone, normalize, defaultConfig, eventConfig, validateConfig, readiness, currentCard, remaining, tick, start, draw, submit, move, continuePlay, answerAndMove, pause, resume, adjust, showHint, validateRun, boardGeometry, boardLayout, travelPath };
 });

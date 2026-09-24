@@ -126,19 +126,36 @@
         previewConfig = preview.config; STORAGE_KEY = preview.key;
       }
       rawSaved = storage().getItem(STORAGE_KEY);
-      const loaded = rawSaved === null ? { version: 1, config: G.clone(previewConfig || G.eventConfig), run: null } : validateState(JSON.parse(rawSaved));
+      const priorPreview = previewMode && rawSaved === null ? findPriorPreview() : null;
+      const loaded = rawSaved === null ? priorPreview || { version: 1, config: G.clone(previewConfig || G.eventConfig), run: null } : validateState(JSON.parse(rawSaved));
       validatePreview(loaded);
-      if (loaded.run) G.continuePlay(loaded.run);
+      if (loaded.run) {
+        if (G.eventUpdateFields(loaded.run.config).length) G.tick(loaded.run);
+        else G.continuePlay(loaded.run);
+      }
       storage().setItem(STORAGE_KEY, JSON.stringify(loaded));
       rawSaved = JSON.stringify(loaded);
       state = loaded; storageBlocked = false; draft = null; dirty = false; armedMode = previewMode && !loaded.run ? "demo" : null;
       $("storage-error").hidden = true;
     } catch (error) { storageError(error.message); }
   }
+  function findPriorPreview() {
+    const matches = [];
+    const source = storage();
+    for (let i = 0; i < source.length; i++) {
+      const key = source.key(i);
+      if (!key.startsWith("mimir-opoly-preview-v1:") || key === STORAGE_KEY) continue;
+      const candidate = validateState(JSON.parse(source.getItem(key)));
+      if (P.matchesSetup(candidate.config, previewConfig) &&
+          (!candidate.run || candidate.run.mode === "demo" && P.matchesSetup(candidate.run.config, previewConfig))) matches.push(candidate);
+    }
+    if (matches.length > 1) throw new Error("More than one matching previous preview exists. Existing data was preserved; use the original preview tab or export its state before choosing a restart.");
+    return matches[0] || null;
+  }
   function validatePreview(value) {
     if (!previewMode) return;
-    if (!previewConfig || JSON.stringify(value.config) !== JSON.stringify(previewConfig) ||
-        value.run && (value.run.mode !== "demo" || JSON.stringify(value.run.config) !== JSON.stringify(previewConfig))) {
+    if (!previewConfig || !P.matchesSetup(value.config, previewConfig) ||
+        value.run && (value.run.mode !== "demo" || !P.matchesSetup(value.run.config, previewConfig))) {
       throw new Error("Preview data does not match its fixed setup link. Discard preview data to restart only this practice game.");
     }
   }
@@ -323,6 +340,8 @@
     const config = run ? run.config : state.config;
     const presentation = config.presentation;
     const minimal = Boolean(presentation?.minimalCards);
+    const updatePending = G.eventUpdateFields(config).length > 0;
+    $("event-update-banner").hidden = !G.eventUpdateTargets(state).length;
     $("player-view").classList.toggle("minimal-cards", minimal);
     $("game-title").textContent = config.title;
     document.querySelector(".brand-mark").textContent = Array.from(config.title.trim())[0].toUpperCase();
@@ -350,14 +369,14 @@
       if (armedMode || minimal) {
         if (!minimal) controls.append(notice(armedMode === "demo" ? "DEMO PLAY. These are interface examples, not your room's puzzles." : "Host approved. The clock starts only when you begin."));
         controls.append(button(presentation?.startLabel || (armedMode === "demo" ? "Begin demo game" : "Begin game"), () => {
-            if (state.run || !armedMode || storageBlocked) return;
+            if (state.run || !armedMode || storageBlocked || updatePending) return;
             try {
               const next = G.clone(state);
               next.run = G.start(state.config, armedMode);
               G.continuePlay(next.run);
               if (persist(next)) { armedMode = null; render(); if (!dealing) $("objective").focus(); }
             } catch (error) { setPlayerMessage(error.message, true); }
-          }, false, storageBlocked || !armedMode));
+          }, false, storageBlocked || !armedMode || updatePending));
       } else {
         controls.append(p("The clock is stopped. The host can edit cards or approve the start.", "muted small"),
           button("Host: edit cards or begin", openHost, false, storageBlocked));
@@ -420,11 +439,11 @@
     if (run.phase === "drawn" || run.phase === "solved") {
       if (run.mode === "demo" && !minimal) panel.append(p("DEMO RUN", "demo-label"));
       const inputId = "player-answer";
-      const input = node("input", { id: inputId, type: "text", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "Your answer", required: "", maxlength: "300", "aria-describedby": "answer-feedback", disabled: run.phase === "solved" || storageBlocked });
+      const input = node("input", { id: inputId, type: "text", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "Your answer", required: "", maxlength: "300", "aria-describedby": "answer-feedback", disabled: run.phase === "solved" || storageBlocked || updatePending });
       const feedback = node("div", { id: "answer-feedback", className: "feedback", role: "status", "aria-live": "polite" });
       const form = node("form", { onsubmit: event => {
         event.preventDefault();
-        if (storageBlocked || dealing) return;
+        if (storageBlocked || dealing || updatePending) return;
         const result = changeRun(r => G.answerAndMove(r, card.id, input.value));
         if (result && !result.ok) {
           const newFeedback = $("answer-feedback");
@@ -441,10 +460,10 @@
           }
         }
       } }, node("label", { for: inputId, text: "Answer" }),
-      node("div", { className: "answer-row" }, input, node("button", { type: "submit", text: "Submit answer", disabled: storageBlocked || run.phase === "solved" })), feedback);
+      node("div", { className: "answer-row" }, input, node("button", { type: "submit", text: "Submit answer", disabled: storageBlocked || run.phase === "solved" || updatePending })), feedback);
       controls.append(form);
       if (G.movementMode(run) === "manual") {
-        const move = button("Move one space", () => { if (!dealing) changeRun(r => G.move(r, card.id), true); }, false, storageBlocked || run.phase !== "solved");
+        const move = button("Move one space", () => { if (!dealing && !updatePending) changeRun(r => G.move(r, card.id), true); }, false, storageBlocked || run.phase !== "solved" || updatePending);
         move.id = "move-one-space";
         controls.append(move);
       }
@@ -510,6 +529,20 @@
       }
     });
   }
+  function applyApprovedEventUpdate() {
+    if (dirty) { hostFeedback("Save or explicitly discard unsaved edits first. The targeted update will preserve your saved custom fields.", true); return; }
+    const targets = G.eventUpdateTargets(state);
+    if (!targets.length) { hostFeedback("No known prior authored fields need updating. Custom answers and content were left unchanged."); return; }
+    confirm("Apply the approved event update?", "Only the listed known prior event fields will change. No reset: time, position and railroad identification are preserved. If a card is already solved, enabling automatic movement performs its ONE pending move now when running, or when resumed. Completed cards stay completed.", () => {
+      const update = G.applyEventUpdate(state);
+      if (persist(update.state)) {
+        draft = G.clone(state.config); dirty = false;
+        if (previewMode && !state.run) armedMode = "demo";
+        render();
+        hostFeedback("Approved event changes applied. Custom fields and private notes were retained. Use the current private physical checklist for the revised print plan; no game reset was performed.");
+      }
+    });
+  }
   function reopenCard(cardId) {
     renderHost();
     const details = document.querySelector(`[data-card-id="${cardId}"]`);
@@ -548,9 +581,22 @@
       button("Return to board", closeHost, true)),
       notice("Host mode is a convenience, not authentication. Anyone inspecting this client-side app or browser storage can find answers. Closing this view removes host answers and future card text from the player page."),
       node("div", { id: "host-feedback", className: "feedback", role: "status", "aria-live": "polite" }));
+    const updates = G.eventUpdateTargets(state);
+    if (updates.length) {
+      const descriptions = {
+        casino: "Casino accepted answers become 60, $60, +60 instead of the known old variants.",
+        movement: "Ordinary correct answers advance automatically. Railroad identification still reveals in place.",
+        intro: "Remove only the exact original keep-every-clue paragraph."
+      };
+      host.append(node("section", { className: "host-card event-loader" },
+        node("h2", { text: "Approved event update" }),
+        node("ul", {}, updates.flatMap(update => update.fields.map(field => node("li", { text: `${update.target}: ${descriptions[field]}` })))),
+        p("Other answers, customized text, private notes and game progress stay as saved. A solved card has at most one pending move; the confirmation explains when that move occurs.", "small"),
+        button("Apply latest event update", applyApprovedEventUpdate, false, storageBlocked)));
+    }
     if (!previewMode) host.append(node("section", { className: "host-card event-loader" },
       node("h2", { text: "MIMIR-OPOLY event setup" }),
-      p("Load the authored five-square game with manual one-space moves, a two-part railroad, and an immediate final-answer win. Your current setup is backed up first; an active game keeps its original snapshot.", "small"),
+      p("Load the authored five-square game with automatic one-space movement, a two-part railroad, and an immediate final-answer win. Your current setup is backed up first; an active game keeps its original snapshot.", "small"),
       button("Load MIMIR-opoly event setup", loadEventPreset, false, storageBlocked)));
     const grid = node("div", { className: "host-grid" });
     const controls = node("section", { className: "host-card" }, node("h2", { text: "Game controls" }),
@@ -712,6 +758,7 @@
   }
   function render() {
     cancelPresentation();
+    $("event-update-banner").hidden = hostOpen || !G.eventUpdateTargets(state).length;
     $("player-view").hidden = hostOpen;
     $("host-view").hidden = !hostOpen;
     $("host-open").hidden = hostOpen;
@@ -747,6 +794,7 @@
     }
   });
   $("host-open").onclick = openHost;
+  $("event-update-host").onclick = openHost;
   new ResizeObserver(() => requestAnimationFrame(sizeBoardSpaces)).observe($("board"));
   matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", event => {
     if (event.matches && dealing) { cancelPresentation(); presentCard(); }
