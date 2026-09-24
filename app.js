@@ -320,10 +320,7 @@
     const config = run ? run.config : state.config;
     const minimal = Boolean(config.presentation?.minimalCards);
     const count = run ? run.config.cards.length - run.index : state.config.cards.length;
-    $("deck-count").textContent = `${Math.max(0, count)} ${count === 1 ? "card" : "cards"} left`;
     $("deal-status").hidden = minimal;
-    $("deck-rule").hidden = minimal;
-    $("deck-rule-text").textContent = run && G.movementMode(run) === "auto" ? "Only your current card is playable. Correct answers move your token and reveal the next card." : "Only your current card is playable. Correct answers unlock one move; moving reveals the next prescribed card.";
     $("deal-status").textContent = !run ? "Your game is ready when you are." : run.status === "won" ? "Every card played." : run.status !== "running" ? "The deck is waiting for your team." : G.movementMode(run) === "manual" ? "Solve this card, then move one space." : "Solve this card. Your pawn and the next card will take it from there.";
     $("card-stack").classList.toggle("deck-empty", count === 0);
     if (!movementMs || !run || run.status !== "running") return;
@@ -363,11 +360,8 @@
     $("event-update-banner").hidden = !G.eventUpdateTargets(state).length;
     $("player-view").classList.toggle("minimal-cards", minimal);
     $("game-title").textContent = config.title;
-    document.querySelector(".brand-mark").textContent = Array.from(config.title.trim())[0].toUpperCase();
     document.title = `${config.title} | Card board`;
     $("mode-badge").textContent = previewMode ? "PREVIEW / NOT LIVE" : run ? `${run.mode.toUpperCase()} GAME` : G.readiness(config).length ? "DEMO / SETUP" : "READY TO PLAY";
-    $("journey-status").textContent = run ? run.status === "won" ? "The path is complete. You made it home." : `One team · ${run.completed.length} of ${config.cards.length} cards solved` : "Your puzzles. Your cards. One path home.";
-    $("progress-label").textContent = `${config.cards.length} cards + START + FINISH`;
     renderBoard(config);
     const panel = $("objective");
     panel.replaceChildren();
@@ -376,7 +370,6 @@
     $("celebration").replaceChildren();
     const style = run && run.status !== "won" ? G.cardStyle(G.currentCard(run), run.index) : { type: "property", group: "brown" };
     $("card-stack").className = `card-stack type-${style.type} group-${style.group}`;
-    $("active-deck-label").textContent = run && run.status !== "won" ? `${G.SPACE_TYPES[style.type]} / DRAWN CARD` : "YOUR GAME CARD";
     $("card-back-title").textContent = config.title;
     $("card-back-type").textContent = G.SPACE_TYPES[style.type];
     $("card-back-icon").replaceChildren(graphic(style.type, config.presetId === G.eventConfig.presetId));

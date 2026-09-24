@@ -4,7 +4,7 @@
   else root.GamePreview = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function (G) {
   "use strict";
-  const REVISION = "20260924-finale1";
+  const REVISION = "20260924-clean1";
   function stable(value) {
     if (Array.isArray(value)) return value.map(stable);
     if (value && typeof value === "object") return Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])]));

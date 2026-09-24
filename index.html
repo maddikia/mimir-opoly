@@ -11,10 +11,10 @@
     })();
   </script>
   <title>MIMIR-OPOLY | A cooperative escape</title>
-  <link rel="stylesheet" href="styles.css?v=20260924-finale1">
-  <script src="game.js?v=20260924-finale1" defer></script>
-  <script src="preview.js?v=20260924-finale1" defer></script>
-  <script src="app.js?v=20260924-finale1" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20260924-clean1">
+  <script src="game.js?v=20260924-clean1" defer></script>
+  <script src="preview.js?v=20260924-clean1" defer></script>
+  <script src="app.js?v=20260924-clean1" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -35,37 +35,29 @@
   </svg>
   <a class="skip-link" href="#objective">Skip to current objective</a>
   <div id="storage-error" class="system-error" role="alert" hidden></div>
-  <div id="event-update-banner" class="preview-banner" hidden>
+  <div id="event-update-banner" class="update-notice" hidden>
     <strong>HOST UPDATE AVAILABLE</strong>
     <span>Your saved game and time are preserved. The host can apply the approved event changes.</span>
     <button id="event-update-host" class="secondary" type="button">Host update</button>
   </div>
-  <div id="preview-banner" class="preview-banner" hidden>
-    <strong>PREVIEW — NOT A LIVE GAME</strong>
-    <span>Separate practice tab. Your saved live setup and run are untouched.</span>
-    <button id="restart-preview" class="secondary" type="button">Restart preview</button>
-  </div>
-  <header class="topbar">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">M</span><div><span class="eyebrow">ONE TEAM. ONE GAME.</span><h1 id="game-title">MIMIR-OPOLY</h1></div></div>
-    <div class="header-actions"><span id="mode-badge" class="badge">SETUP / DEMO</span><button id="host-open" class="quiet">Host / setup</button></div>
-  </header>
   <main id="player-view">
-    <div class="expedition-bar"><span id="journey-status">An ordinary game. An extraordinary way home.</span><div class="clock-wrap"><span id="clock-label">TIME TO RETURN</span><span id="clock" class="clock" role="timer" aria-label="60 minutes remaining">60:00</span></div></div>
+    <h1 id="game-title" class="sr-only">MIMIR-OPOLY</h1>
     <div class="play-table">
     <section class="board-panel" aria-label="Team game board">
-      <div class="board-heading"><span class="eyebrow">THE COOPERATIVE EDITION</span><span id="progress-label">One path. One team.</span></div>
       <div id="game-board" class="classic-board">
         <div id="board-art" aria-hidden="true"></div>
         <ol id="board" class="perimeter-board"></ol>
         <div class="city-center">
+          <div id="board-clock" class="board-clock" role="group" aria-labelledby="clock-label">
+            <span id="clock-label">TIME TO RETURN</span>
+            <span id="clock" class="clock" role="timer" aria-live="off" aria-label="60 minutes remaining">60:00</span>
+          </div>
           <section id="chance-deck" class="table-deck chance-deck" aria-label="Chance deck">
-            <div class="pile-face"><span>CHANCE</span><svg class="board-icon" aria-hidden="true"><use href="#icon-chance"/></svg><small id="chance-status">Fixed card order</small></div>
+            <div class="pile-face"><span>CHANCE</span><svg class="board-icon" aria-hidden="true"><use href="#icon-chance"/></svg><small id="chance-status" class="sr-only">Fixed card order</small></div>
           </section>
-          <div class="city-instructions"><strong>ONE TEAM.<br>ONE TOKEN.</strong><span>Solve a card.<br>Earn your next step.</span></div>
-          <div class="city-wordmark"><span>YOUR WAY HOME</span><h2 id="board-title">MIMIR-OPOLY</h2><small>AN ORIGINAL PUZZLE-BOARD ADVENTURE</small></div>
-          <div class="city-skyline" aria-hidden="true"><svg class="board-icon" viewBox="0 0 180 90"><use href="#icon-skyline"/></svg><span>EVERY STEP EARNED</span></div>
+          <div class="city-wordmark"><h2 id="board-title">MIMIR-OPOLY</h2></div>
           <section id="community-deck" class="table-deck community-deck" aria-label="Community Chest deck">
-            <div class="pile-face"><span>COMMUNITY CHEST</span><svg class="board-icon" aria-hidden="true"><use href="#icon-community"/></svg><small id="community-status">Fixed card order</small></div>
+            <div class="pile-face"><span>COMMUNITY CHEST</span><svg class="board-icon" aria-hidden="true"><use href="#icon-community"/></svg><small id="community-status" class="sr-only">Fixed card order</small></div>
           </section>
         </div>
         <div id="pawn-layer" aria-hidden="true">
@@ -102,10 +94,8 @@
           </div>
         </div>
       </div>
-      <div class="board-legend"><span><i class="legend-current"></i> Your token</span><span><i class="legend-complete"></i> Solved spaces</span><span>Printed corner rules are decorative. No jail turns or penalties; only the numbered challenges count.</span></div>
     </section>
         <aside class="card-table" aria-label="Drawn challenge card">
-          <div class="deck-heading"><span id="active-deck-label">THE CURRENT CARD</span><span id="deck-count"></span></div>
           <div id="card-stack" class="card-stack">
             <div id="card-turner" class="card-turner">
               <div class="card-reverse" aria-hidden="true"><span id="card-back-title" class="deck-wordmark">MIMIR-OPOLY</span><span id="card-back-icon"></span><span id="card-back-type">YOUR NEXT CARD</span></div>
@@ -113,13 +103,18 @@
             </div>
           </div>
           <div id="answer-controls" class="answer-controls"></div>
-          <p id="deal-status" class="deal-status" role="status">Your adventure is waiting in the cards.</p>
-          <div id="deck-rule" class="deck-rule"><strong>ONE ORDERED DECK</strong><p id="deck-rule-text">Only your current card is playable. Correct answers unlock one move.</p></div>
+          <p id="deal-status" class="sr-only" role="status"></p>
         </aside>
     </div>
     <div id="player-message" class="feedback" role="status" aria-live="polite"></div>
     <div id="celebration" class="celebration" aria-hidden="true"></div>
-    <footer>Fictional stakes. Real teamwork. Doors stay unlocked; anyone may step out at any time.<span>No accounts. No internet. Just your expedition.</span></footer>
+    <div class="bottom-controls" aria-label="Game administration">
+      <span id="mode-badge" class="badge">SETUP / DEMO</span>
+      <div id="preview-banner" class="preview-tools" hidden>
+        <button id="restart-preview" class="secondary" type="button">Restart preview</button>
+      </div>
+      <button id="host-open" class="quiet" type="button">Host / setup</button>
+    </div>
   </main>
   <main id="host-view" hidden tabindex="-1"></main>
   <dialog id="confirm-dialog" aria-labelledby="confirm-title"><h2 id="confirm-title">Confirm host action</h2><p id="confirm-description"></p><div class="button-row"><button id="confirm-cancel" class="secondary">Cancel</button><button id="confirm-accept">Confirm</button></div></dialog>
