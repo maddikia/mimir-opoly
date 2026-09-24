@@ -61,7 +61,10 @@ html[data-theme="dark"] {
   --cp-property-dark-blue: #0072bb;
   --cp-board-ink: #151515;
   --cp-board-paper: #ffffff;
-  --cp-piece-edge: color-mix(in srgb, var(--cp-property-red) 65%, var(--cp-board-ink));
+  --cp-metal-silver: #bdc4cb;
+  --cp-metal-light: #f2f5f7;
+  --cp-metal-dark: #616a74;
+  --cp-metal-band: #343c45;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--cp-surface); color: var(--cp-text); font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif; font-size: 17px; line-height: 1.55; }

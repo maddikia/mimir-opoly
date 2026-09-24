@@ -4,7 +4,7 @@
   else root.GamePreview = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function (G) {
   "use strict";
-  const REVISION = "20260924-preview1";
+  const REVISION = "20260924-hat1";
   function fingerprint(value) {
     let hash = 2166136261;
     for (const char of JSON.stringify(value)) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);

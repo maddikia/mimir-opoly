@@ -11,10 +11,10 @@
     })();
   </script>
   <title>MIMIR-OPOLY | A cooperative escape</title>
-  <link rel="stylesheet" href="styles.css?v=20260924-preview1">
-  <script src="game.js?v=20260924-preview1" defer></script>
-  <script src="preview.js?v=20260924-preview1" defer></script>
-  <script src="app.js?v=20260924-preview1" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20260924-hat1">
+  <script src="game.js?v=20260924-hat1" defer></script>
+  <script src="preview.js?v=20260924-hat1" defer></script>
+  <script src="app.js?v=20260924-hat1" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -65,12 +65,34 @@
         </div>
         <div id="pawn-layer" aria-hidden="true">
           <div id="team-pawn">
-            <svg viewBox="0 0 64 84">
-              <ellipse cx="32" cy="77" rx="27" ry="5" fill="var(--cp-border-strong)" opacity=".35"/>
-              <path d="M22 29C17 27 15 22 15 17A17 17 0 0 1 49 17C49 23 46 27 42 29C41 39 46 51 50 57L56 64L55 71Q32 80 9 71L8 64L14 57C20 48 23 37 22 29Z" fill="var(--cp-property-red)" stroke="var(--cp-piece-edge)" stroke-width="2"/>
-              <path d="M12 63Q32 71 52 63M22 32Q32 37 42 32" fill="none" stroke="var(--cp-piece-edge)" stroke-width="3"/>
-              <ellipse cx="26" cy="12" rx="6" ry="4" fill="var(--cp-sheen)" transform="rotate(-35 26 12)"/>
-              <path d="M26 41L22 55" stroke="var(--cp-sheen)" stroke-width="4" stroke-linecap="round"/>
+            <svg class="silver-top-hat" data-token="silver-top-hat" viewBox="0 0 80 78" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="hat-crown" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="var(--cp-metal-dark)"/>
+                  <stop offset="22%" stop-color="var(--cp-metal-silver)"/>
+                  <stop offset="42%" stop-color="var(--cp-metal-light)"/>
+                  <stop offset="72%" stop-color="var(--cp-metal-silver)"/>
+                  <stop offset="100%" stop-color="var(--cp-metal-dark)"/>
+                </linearGradient>
+                <linearGradient id="hat-top" x1="0%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="var(--cp-metal-light)"/>
+                  <stop offset="68%" stop-color="var(--cp-metal-silver)"/>
+                  <stop offset="100%" stop-color="var(--cp-metal-dark)"/>
+                </linearGradient>
+                <linearGradient id="hat-brim" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="var(--cp-metal-light)"/>
+                  <stop offset="55%" stop-color="var(--cp-metal-silver)"/>
+                  <stop offset="100%" stop-color="var(--cp-metal-dark)"/>
+                </linearGradient>
+              </defs>
+              <ellipse cx="40" cy="72" rx="34" ry="4" fill="var(--cp-board-ink)" opacity=".16"/>
+              <ellipse cx="40" cy="60" rx="36" ry="12" fill="var(--cp-metal-dark)" stroke="var(--cp-metal-band)" stroke-width="1.4"/>
+              <ellipse cx="40" cy="56" rx="36" ry="11" fill="url(#hat-brim)" stroke="var(--cp-metal-band)" stroke-width="1.4"/>
+              <path d="M18 17 22 51C23 61 57 61 58 51L62 17Z" fill="url(#hat-crown)" stroke="var(--cp-metal-band)" stroke-width="1.4"/>
+              <path d="M21 43C30 49 50 49 59 43L58 51C53 59 27 59 22 51Z" fill="var(--cp-metal-band)" stroke="var(--cp-metal-dark)" stroke-width="1"/>
+              <ellipse cx="40" cy="17" rx="22" ry="9" fill="url(#hat-top)" stroke="var(--cp-metal-band)" stroke-width="1.4"/>
+              <ellipse cx="39" cy="15" rx="16" ry="5" fill="none" stroke="var(--cp-metal-light)" stroke-width="1.2" opacity=".6"/>
+              <path d="m27 25 2 15M10 54C14 60 24 64 34 64" fill="none" stroke="var(--cp-metal-light)" stroke-width="2" stroke-linecap="round" opacity=".75"/>
             </svg>
           </div>
         </div>
